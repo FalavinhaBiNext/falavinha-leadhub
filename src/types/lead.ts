@@ -2,7 +2,7 @@ export interface Lead {
   id: string;
   nome: string;
   email: string;
-  telefone: string;
+  telefone?: string;
   faturamentoAnual: number;
   segmento: string;
   regimeTributario: string;

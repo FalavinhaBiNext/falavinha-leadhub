@@ -46,7 +46,8 @@ export function LeadCard({ lead, onLeadUpdate, onViewDetails }: LeadCardProps) {
     }).format(value);
   };
 
-  const formatPhone = (phone: string) => {
+  const formatPhone = (phone: string | undefined | null) => {
+    if (!phone) return 'Telefone não informado';
     return phone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
   };
 
