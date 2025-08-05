@@ -20,10 +20,10 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
 };
 
 export const leadsApi = {
-  async getLeads(page: number = 1, limit: number = 50): Promise<LeadsResponse> {
+  async getAllLeads(): Promise<LeadsResponse> {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/leads/findAll?page=${page}&limit=${limit}`,
+        `${API_BASE_URL}/leads/findAll`,
         {
           method: 'GET',
           headers: {
@@ -38,8 +38,8 @@ export const leadsApi = {
       return {
         leads: data.leads || data || [],
         total: data.total || data.length || 0,
-        page: data.page || page,
-        totalPages: data.totalPages || Math.ceil((data.total || data.length || 0) / limit)
+        page: 1,
+        totalPages: 1
       };
     } catch (error) {
       console.error('Error fetching leads:', error);

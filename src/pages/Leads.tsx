@@ -4,7 +4,7 @@ import { leadsApi } from '@/services/api';
 import { Header } from '@/components/layout/Header';
 import { LeadsGrid } from '@/components/leads/LeadsGrid';
 import { LeadModal } from '@/components/leads/LeadModal';
-import { Pagination } from '@/components/leads/Pagination';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -13,15 +13,11 @@ import { RefreshCw, Filter, Download } from 'lucide-react';
 export default function Leads() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [totalLeads, setTotalLeads] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { toast } = useToast();
-
-  const leadsPerPage = 50;
 
   // Filtered leads based on search term
   const filteredLeads = useMemo(() => {
@@ -38,14 +34,12 @@ export default function Leads() {
     );
   }, [leads, searchTerm]);
 
-  const fetchLeads = async (page: number = 1) => {
+  const fetchLeads = async () => {
     setLoading(true);
     try {
-      const response: LeadsResponse = await leadsApi.getLeads(page, leadsPerPage);
+      const response: LeadsResponse = await leadsApi.getAllLeads();
       setLeads(response.leads);
-      setTotalPages(response.totalPages);
       setTotalLeads(response.total);
-      setCurrentPage(page);
     } catch (error) {
       toast({
         title: "Erro ao carregar leads",
@@ -58,13 +52,9 @@ export default function Leads() {
   };
 
   useEffect(() => {
-    fetchLeads(1);
+    fetchLeads();
   }, []);
 
-  const handlePageChange = (page: number) => {
-    fetchLeads(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   const handleLeadUpdate = (updatedLead: Lead) => {
     setLeads(prevLeads => 
@@ -89,7 +79,7 @@ export default function Leads() {
   };
 
   const handleRefresh = () => {
-    fetchLeads(currentPage);
+    fetchLeads();
   };
 
   const activeLeads = filteredLeads.filter(lead => lead.ativo).length;
@@ -101,7 +91,7 @@ export default function Leads() {
       
       <main className="container mx-auto px-6 py-8">
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-gradient-card border border-border rounded-lg p-6 shadow-card">
             <div className="flex items-center justify-between">
               <div>
@@ -140,17 +130,6 @@ export default function Leads() {
             </div>
           </div>
 
-          <div className="bg-gradient-card border border-border rounded-lg p-6 shadow-card">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Página Atual</p>
-                <p className="text-2xl font-bold text-foreground">{currentPage}</p>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                de {totalPages}
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Action Bar */}
@@ -199,17 +178,6 @@ export default function Leads() {
           />
         </div>
 
-        {/* Pagination - Only show when not searching */}
-        {!searchTerm && (
-          <div className="flex justify-center">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-              isLoading={loading}
-            />
-          </div>
-        )}
 
         {/* Lead Details Modal */}
         <LeadModal
