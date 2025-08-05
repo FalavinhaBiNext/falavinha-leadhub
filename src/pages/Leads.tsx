@@ -68,6 +68,11 @@ export default function Leads() {
     }
   };
 
+  const handleLeadDelete = (leadId: string) => {
+    setLeads(prevLeads => prevLeads.filter(lead => lead.id !== leadId));
+    setTotalLeads(prev => prev - 1);
+  };
+
   const handleViewDetails = (lead: Lead) => {
     setSelectedLead(lead);
     setIsModalOpen(true);
@@ -175,6 +180,7 @@ export default function Leads() {
             isLoading={loading}
             onLeadUpdate={handleLeadUpdate}
             onViewDetails={handleViewDetails}
+            onLeadDelete={handleLeadDelete}
           />
         </div>
 

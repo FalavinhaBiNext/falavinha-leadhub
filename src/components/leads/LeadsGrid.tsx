@@ -7,9 +7,10 @@ interface LeadsGridProps {
   isLoading: boolean;
   onLeadUpdate: (updatedLead: Lead) => void;
   onViewDetails: (lead: Lead) => void;
+  onLeadDelete: (leadId: string) => void;
 }
 
-export function LeadsGrid({ leads, isLoading, onLeadUpdate, onViewDetails }: LeadsGridProps) {
+export function LeadsGrid({ leads, isLoading, onLeadUpdate, onViewDetails, onLeadDelete }: LeadsGridProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -58,6 +59,7 @@ export function LeadsGrid({ leads, isLoading, onLeadUpdate, onViewDetails }: Lea
           lead={lead}
           onLeadUpdate={onLeadUpdate}
           onViewDetails={onViewDetails}
+          onLeadDelete={onLeadDelete}
         />
       ))}
     </div>

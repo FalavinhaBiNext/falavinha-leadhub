@@ -84,5 +84,24 @@ export const leadsApi = {
       console.error('Error assigning consultor:', error);
       throw error instanceof ApiError ? error : new ApiError('Failed to assign consultor');
     }
+  },
+
+  async deleteLead(leadId: string): Promise<ApiResponse<void>> {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/leads/delete/${leadId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      return await handleResponse<ApiResponse<void>>(response);
+    } catch (error) {
+      console.error('Error deleting lead:', error);
+      throw error instanceof ApiError ? error : new ApiError('Failed to delete lead');
+    }
   }
 };

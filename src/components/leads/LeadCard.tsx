@@ -3,8 +3,8 @@ import { Lead } from '@/types/lead';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Mail, Phone, Building2, TrendingUp, FileText, Users, MoreVertical, Eye } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Mail, Phone, Building2, TrendingUp, FileText, Users, Eye, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { leadsApi } from '@/services/api';
 
@@ -12,10 +12,12 @@ interface LeadCardProps {
   lead: Lead;
   onLeadUpdate: (updatedLead: Lead) => void;
   onViewDetails: (lead: Lead) => void;
+  onLeadDelete: (leadId: string) => void;
 }
 
-export function LeadCard({ lead, onLeadUpdate, onViewDetails }: LeadCardProps) {
+export function LeadCard({ lead, onLeadUpdate, onViewDetails, onLeadDelete }: LeadCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
 
   const handleToggleStatus = async () => {
@@ -36,6 +38,27 @@ export function LeadCard({ lead, onLeadUpdate, onViewDetails }: LeadCardProps) {
       });
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleDeleteLead = async () => {
+    setIsDeleting(true);
+    try {
+      await leadsApi.deleteLead(lead.id);
+      onLeadDelete(lead.id);
+      toast({
+        title: "Lead excluído",
+        description: "Lead foi excluído com sucesso.",
+        variant: "default",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o lead.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -62,28 +85,13 @@ export function LeadCard({ lead, onLeadUpdate, onViewDetails }: LeadCardProps) {
               <span className="text-sm text-muted-foreground truncate">{lead.email}</span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge
-              variant={lead.ativo ? 'active' : 'inactive'}
-              onClick={handleToggleStatus}
-              className={isUpdating ? 'opacity-50' : ''}
-            >
-              {lead.ativo ? 'Ativo' : 'Inativo'}
-            </Badge>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-popover border-border">
-                <DropdownMenuItem onClick={() => onViewDetails(lead)}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  Ver detalhes
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          <Badge
+            variant={lead.ativo ? 'active' : 'inactive'}
+            onClick={handleToggleStatus}
+            className={isUpdating ? 'opacity-50' : ''}
+          >
+            {lead.ativo ? 'Ativo' : 'Inativo'}
+          </Badge>
         </div>
       </CardHeader>
 
@@ -127,15 +135,49 @@ export function LeadCard({ lead, onLeadUpdate, onViewDetails }: LeadCardProps) {
           </div>
         )}
 
-        <Button 
-          onClick={() => onViewDetails(lead)}
-          variant="outline" 
-          size="sm" 
-          className="w-full mt-4 group-hover:border-primary/50 transition-colors"
-        >
-          <Eye className="mr-2 h-4 w-4" />
-          Ver detalhes
-        </Button>
+        <div className="flex gap-2 mt-4">
+          <Button 
+            onClick={() => onViewDetails(lead)}
+            variant="outline" 
+            size="sm" 
+            className="flex-1 group-hover:border-primary/50 transition-colors"
+          >
+            <Eye className="mr-2 h-4 w-4" />
+            Ver detalhes
+          </Button>
+          
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button 
+                variant="destructive" 
+                size="sm"
+                className="px-3"
+                disabled={isDeleting}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-card border-border">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                <AlertDialogDescription className="text-muted-foreground">
+                  Tem certeza que deseja excluir o lead <strong>{lead.nome}</strong>? 
+                  Esta ação não pode ser desfeita.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={handleDeleteLead}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? 'Excluindo...' : 'Excluir'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </CardContent>
     </Card>
   );
